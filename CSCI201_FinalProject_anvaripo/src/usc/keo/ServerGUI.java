@@ -16,33 +16,29 @@ public class ServerGUI extends JFrame implements ActionListener, WindowListener,
 	//GUI
 	private JButton stopStart;
 	private JTextArea chatTextArea;
-	private JTextField portTextField;
 
-	ServerGUI(int defaultPort) {
+	ServerGUI() {
 		super("The Server");
 		server = null;
 
 		//North Panel 
 		JPanel north = new JPanel();
-		north.add(new JLabel("Port number: "));
-		portTextField = new JTextField("  " + defaultPort);
-		north.add(portTextField);
-
 		stopStart = new JButton("Start");
 		stopStart.addActionListener(this);
 		north.add(stopStart);
+		north.add(new JLabel("Port: " + PORT + " | Host: " + HOST));
 		add(north, BorderLayout.NORTH);
 		
 		//Text Area 
 		JPanel center = new JPanel(new GridLayout(1,1));
 		chatTextArea = new JTextArea(80,80);
 		chatTextArea.setEditable(false);
-		appendText("Chat room.\n");
+		appendText("Waiting for Clients...\n");
 		center.add(new JScrollPane(chatTextArea));
 		add(center);
 		
 		addWindowListener(this);
-		setSize(400, 600);
+		setSize(500, 300);
 		setVisible(true);
 	}		
 	
@@ -50,7 +46,6 @@ public class ServerGUI extends JFrame implements ActionListener, WindowListener,
 		public void run() {
 			server.startServer();
 			stopStart.setText("Start");
-			portTextField.setEditable(true);
 			System.out.println("Server Stopped\n");
 			server = null;
 		}
@@ -61,33 +56,21 @@ public class ServerGUI extends JFrame implements ActionListener, WindowListener,
 		if(server != null) {
 			server.stopServer();
 			server = null;
-			portTextField.setEditable(true);
 			stopStart.setText("Start");
 			return;
 		}
 
-		int portNumber;
-		try {
-			portNumber = Integer.parseInt(portTextField.getText().trim());
-		}catch(Exception er) {
-			appendText("Invalid port number");
-			return;
-		}
-
-		server = new Server(portNumber, this);
+		server = new Server(this);
 		new RunServer().start();  //Run Server thread
 		
 		stopStart.setText("Stop");
-		portTextField.setEditable(false); //don't need this line
 	}
 	
-	//Appends Text to Text Area
 	void appendText(String str) {
 		chatTextArea.append(str);
 		chatTextArea.setCaretPosition(chatTextArea.getText().length() - 1);
 	}
 
-	//If hit close button, stop server 
 	public void windowClosing(WindowEvent e) {
 		if(server != null) {
 			try {
@@ -113,7 +96,7 @@ public class ServerGUI extends JFrame implements ActionListener, WindowListener,
 		InetAddress IP= InetAddress.getLocalHost();
 		System.out.println("IP of my system is := "+IP.getHostAddress());
 		
-		new ServerGUI(PORT);
+		new ServerGUI();
 	}
 }
 

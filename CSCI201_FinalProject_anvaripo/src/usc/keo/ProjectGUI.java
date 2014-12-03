@@ -6,6 +6,8 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.geom.Ellipse2D;
@@ -14,19 +16,26 @@ import java.awt.geom.RoundRectangle2D;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 
-public class ProjectGUI extends JFrame {
+public class ProjectGUI extends JFrame implements KeoConstants {
 	ProjectGUI(){
 		super("DAGAME");
 		setSize(800, 600);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
+		ServerGUI gui = new ServerGUI();
 		
-		
+		JButton button = new JButton("chat");
+		button.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent ae) {
+	        	new ClientGUI();
+        	}
+	    });
 
 		JPanel leftColumn = new JPanel(); //set blayout to vertical
 		leftColumn.setLayout(new BoxLayout(leftColumn, BoxLayout.Y_AXIS));
@@ -34,6 +43,7 @@ public class ProjectGUI extends JFrame {
 		leftColumn.setPreferredSize(new Dimension(100, 30));
 		JPanel mainPanel = new MapPanel();
 		//mainPanel.setBackground(Color.black);
+		mainPanel.add(button);
 		add(mainPanel, BorderLayout.CENTER);
 		//JPanel myStats = new JPanel();
 		//myStats.setLayout(new BoxLayout(myStats, BoxLayout.Y_AXIS));
