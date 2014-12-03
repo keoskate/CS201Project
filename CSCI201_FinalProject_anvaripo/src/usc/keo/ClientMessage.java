@@ -1,7 +1,7 @@
 package usc.keo;
 
 import java.io.*;
-
+//test github
 public class ClientMessage implements Serializable, KeoConstants {
 	private static final long serialVersionUID = 1L;
 
