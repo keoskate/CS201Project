@@ -30,6 +30,7 @@ public class ClientGUI extends JFrame implements ActionListener, KeoConstants {
 	
 	ClientGUI() {
 		super("Chat Client");
+		setSize(600, 700);
 		setLayout(null);
 		
 		JPanel textFieldPanel = new JPanel(new GridLayout(2,1));
@@ -76,7 +77,7 @@ public class ClientGUI extends JFrame implements ActionListener, KeoConstants {
 		centerPanel.setBounds(0, 400, 600, 230);
 		southPanel.setBounds(0, 630, 600, 75);
 		
-		add(jlblTitle, this.getSize());
+		add(jlblTitle, jlblTitle.getPreferredSize());
 		add(gamePanel, this.getSize());
 		add(jlblStatus, this.getSize());
 		add(textFieldPanel, this.getSize());
@@ -84,7 +85,6 @@ public class ClientGUI extends JFrame implements ActionListener, KeoConstants {
 		add(southPanel, this.getSize());
 		
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		setSize(600, 700);
 		setVisible(true);
 		textField.requestFocus();
 	}
