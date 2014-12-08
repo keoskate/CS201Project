@@ -20,6 +20,7 @@ public class ClientGUI extends JFrame implements ActionListener, KeoConstants {
 	public JLabel jlblTitle = new JLabel();
 	public JLabel jlblStatus = new JLabel();
 
+	public boolean second = true; 
 	public boolean myTurn = false;
 	public char myToken = ' ';
 	public char otherToken = ' ';
@@ -87,6 +88,9 @@ public class ClientGUI extends JFrame implements ActionListener, KeoConstants {
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setVisible(true);
 		textField.requestFocus();
+		
+		client = new Client(this);
+		client.initClient2();
 	}
 
 
@@ -124,22 +128,26 @@ public class ClientGUI extends JFrame implements ActionListener, KeoConstants {
 		}
 	
 		if(o == login) {
-			String username = textField.getText().trim();
+			if (!second) {
+				String username = textField.getText().trim();
 
-			if(username.length() == 0)
-				return;
+				if(username.length() == 0)
+					return;
 
-			client = new Client(username, this);
-	
-			if(!client.initClient()) 
-				return;
-			textField.setText("");
-			label.setText("Enter your message below:");
-			connected = true;
+				client = new Client(username, this);
+		
+				if(!client.initClient()) 
+					return;
+				
+				textField.setText("");
+				label.setText("Enter your message below:");
+				connected = true;
+				
+				login.setEnabled(false);
+				logout.setEnabled(true);
+				textField.addActionListener(this);
+			}
 			
-			login.setEnabled(false);
-			logout.setEnabled(true);
-			textField.addActionListener(this);
 		}
 
 	}

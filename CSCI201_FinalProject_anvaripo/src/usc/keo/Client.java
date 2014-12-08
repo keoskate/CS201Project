@@ -12,8 +12,8 @@ public class Client implements KeoConstants{
 	private String user;
 	//private int user;
 	
-//	private ObjectInputStream fromServer;
-//	private ObjectOutputStream toServer;
+	private DataInputStream fromServer;
+	private DataOutputStream toServer;
 
 	Client(String username, ClientGUI cGUI) {
 		this.user = username;
@@ -21,6 +21,27 @@ public class Client implements KeoConstants{
 	}
 	Client(ClientGUI cGUI) {
 		this.cGUI = cGUI;
+	}
+	public boolean initClient2() {
+		// try to connect to the server
+		try {
+			socket = new Socket(HOST, PORT);
+		} catch(Exception ec) {
+			display("Error connecting to server:" + ec);
+			return false;
+		}
+		
+		try {
+			toServer = new DataOutputStream(socket.getOutputStream());
+			fromServer = new DataInputStream(socket.getInputStream());
+		} catch (IOException eIO) {
+			eIO.printStackTrace();
+			display("Error creating new Input/Output Streams: " + eIO);
+			return false;
+		}
+		new ServerListenerThread2().start();
+		
+		return true;
 	}
 	public boolean initClient() {
 		// try to connect to the server
@@ -88,24 +109,24 @@ public class Client implements KeoConstants{
 			cGUI.connectionFailed();		
 	}
 	
-	class ServerListenerThread extends Thread {
+	class ServerListenerThread2 extends Thread {
 		@Override
 		public void run() {
-			try {
+			try {				
 				 // Get notification from the server
-		        String player = (String)chatInput.readObject();
-				
+		        int player = fromServer.readInt();
+		     
 		        // Am I player 1 or 2?
-		        if (player.equals(PLAYER1)) {
+		        if (player == PLAYER1) {
 		        	cGUI.myToken = 'X';
 		        	cGUI.otherToken = 'O';
 		        	cGUI.jlblTitle.setText("Player 1 with token 'X'"); 
 		        	cGUI.jlblStatus.setText("Waiting for player 2 to join");
 		            // Receive startup notification from the server
-		        	chatInput.readObject(); // Whatever read is ignored        
+		        	fromServer.readInt(); // Whatever read is ignored        
 		            cGUI.jlblStatus.setText("Player 2 has joined. I start first");
 		            cGUI.myTurn = true; 
-		        } else if (player.equals(PLAYER2)) {
+		        } else if (player == PLAYER2) {
 		        	System.out.println("Test");
 		        	cGUI.myToken = 'O';
 		        	cGUI.otherToken = 'X';
@@ -113,14 +134,11 @@ public class Client implements KeoConstants{
 		        	cGUI.jlblStatus.setText("Waiting for player 1 to move");
 		        }
 		        while(cGUI.continueToPlay) {
-		        	String msg = (String) chatInput.readObject();
-					cGUI.appendMessage(msg);
-					
-					if (player.equals(PLAYER1)) {
+					if (player == PLAYER1) {
 		                waitForPlayerAction();
 		                sendMove();
 		                receiveInfoFromServer();
-		            } else if (player.equals(PLAYER2)) {
+		            } else if (player == PLAYER2) {
 		                receiveInfoFromServer();
 		                waitForPlayerAction();
 		                sendMove();
@@ -128,16 +146,32 @@ public class Client implements KeoConstants{
 		        }
 			}catch(IOException e) {
 				e.printStackTrace();
-				display("Server has closed the connection: " + e);
-				if(cGUI != null) 
-					cGUI.connectionFailed();
-				cGUI.continueToPlay = false;
-			} catch(ClassNotFoundException e2) { 
-				e2.printStackTrace();
 			} catch (InterruptedException e3) {
 				e3.printStackTrace();
 			}
 			
+		}
+		
+		
+	}
+	class ServerListenerThread extends Thread {
+		@Override
+		public void run() {
+			while(true) {
+				try {		
+					String msg = (String) chatInput.readObject();
+					cGUI.appendMessage(msg);
+			        
+				}catch(IOException e) {
+					e.printStackTrace();
+					display("Server has closed the connection: " + e);
+					if(cGUI != null) 
+						cGUI.connectionFailed();
+					break;
+				} catch(ClassNotFoundException e2) { 
+					e2.printStackTrace();
+				}
+			}
 		}
 	}
 
@@ -149,21 +183,22 @@ public class Client implements KeoConstants{
 	}
 
 	private void sendMove() throws IOException { 
-		chatOutput.writeObject(cGUI.rowSelected); // Send the selected row 
-		chatOutput.writeObject(cGUI.columnSelected); // Send the selected column
+		toServer.writeInt(cGUI.rowSelected); // Send the selected row 
+		toServer.writeInt(cGUI.columnSelected); // Send the selected column
 	}
 
-	public void receiveInfoFromServer() throws IOException, ClassNotFoundException { // Receive game status
-	    String status = (String) chatInput.readObject();
-	    if (status.equals(PLAYER1_WON)) {
-	        // Player 1 won, stop playing continueToPlay = false;
+	public void receiveInfoFromServer() throws IOException { // Receive game status
+	    int status = fromServer.readInt();
+	    if (status == PLAYER1_WON) {
+	        // Player 1 won, stop playing 
+	    	cGUI.continueToPlay = false;
 	        if (cGUI.myToken == 'X') {
 	        	cGUI.jlblStatus.setText("I won! (X)"); 
 	        } else if (cGUI.myToken == 'O') {
 	        	cGUI.jlblStatus.setText("Player 1 (X) has won!");
 	            receiveMove();
 	        }
-	    } else if (status.equals(PLAYER2_WON)) {
+	    } else if (status == PLAYER2_WON) {
 	        // Player 2 won, stop playing
 	    	cGUI.continueToPlay = false; 
 	        if (cGUI.myToken == 'O') {
@@ -172,7 +207,7 @@ public class Client implements KeoConstants{
 	   			cGUI.jlblStatus.setText("Player 2 (O) has won!"); 
 	   		 	receiveMove();
 	        } 
-	    } else if (status.equals(DRAW)) {
+	    } else if (status == DRAW) {
 	        // No winner, game is over
 	    	cGUI.continueToPlay = false; 
 	    	cGUI.jlblStatus.setText("Game is over, no winner!");
@@ -187,10 +222,10 @@ public class Client implements KeoConstants{
 	}
 
 
-	private void receiveMove() throws IOException, ClassNotFoundException { // Get the other player's move
-		String row = (String)chatInput.readObject();
-		String column = (String)chatInput.readObject();
-		cGUI.cell[Integer.parseInt(row)][Integer.parseInt(column)].setToken(cGUI.otherToken);
+	private void receiveMove() throws IOException { // Get the other player's move
+		int row = fromServer.readInt();
+		int column = fromServer.readInt(); 
+		cGUI.cell[row][column].setToken(cGUI.otherToken);
 	}
 	
 	
