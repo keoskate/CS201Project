@@ -11,7 +11,7 @@ public class ClientGUI extends JFrame implements ActionListener, KeoConstants {
 
 	private JLabel label;
 	private JTextField textField;
-	public JButton login, logout;
+	public JButton login, logout, restart;
 	private JTextArea clientTextArea;
 	private boolean connected;
 	private Client client;
@@ -30,7 +30,7 @@ public class ClientGUI extends JFrame implements ActionListener, KeoConstants {
 	public int columnSelected;
 	
 	ClientGUI() {
-		super("Chat Client");
+		super("Game Client");
 		setSize(600, 700);
 		setLayout(null);
 		
@@ -62,13 +62,18 @@ public class ClientGUI extends JFrame implements ActionListener, KeoConstants {
 		
 		login = new JButton("Login");
 		login.addActionListener(this);
+		//login.setEnabled(false);
 		logout = new JButton("Logout");
 		logout.addActionListener(this);
-		logout.setEnabled(false);		
+		logout.setEnabled(false);	
+		restart = new JButton("Restart");
+		restart.addActionListener(this);
+		//restart.setEnabled(false);	
 	
 		JPanel southPanel = new JPanel();
 		southPanel.add(login);
 		southPanel.add(logout);
+		southPanel.add(restart);
 		
 		jlblTitle.setBounds(10, 5, 580, 20);
 		gamePanel.setBounds(155, 30, 250, 250);
@@ -121,6 +126,13 @@ public class ClientGUI extends JFrame implements ActionListener, KeoConstants {
 		if(isConnected()) {
 			getClient().sendMessage(new ClientMessage(ClientMessage.MESSAGE, getTextField().getText()));				
 			getTextField().setText("");
+			return;
+		}
+		
+		if(o == restart) {
+			getClient().sendMessage(new ClientMessage(ClientMessage.RESTART, ""));
+			setClient(new Client(this));
+			getClient().initClient2();
 			return;
 		}
 	

@@ -12,6 +12,7 @@ public class Server implements KeoConstants {
 	private HandleSession session;
 	
 	private boolean running;
+	private boolean didRestart;
 		
 	public Server(ServerGUI gui) {
 		this.serverGUI = gui;
@@ -25,7 +26,7 @@ public class Server implements KeoConstants {
 			ServerSocket serverSocket = new ServerSocket(PORT);
 			serverGUI.appendText(new Date() + ": Server started at socket "+ PORT + "\n");
 			
-			ClientThread ct;
+			
 			int sessionNo = 1;
 			while (running) {
 				
@@ -34,46 +35,39 @@ public class Server implements KeoConstants {
 				if(!running)
 					break;
 				Socket player1 = serverSocket.accept();
-				//append
-				//append
+
 				if(!running)
 					break;
 				
-//				ct = new ClientThread(player1); 
-//				clientThreads.add(ct);									
-//				ct.start();
 				new DataOutputStream(player1.getOutputStream()).writeInt(PLAYER1);
 
 				Socket player2 = serverSocket.accept();
-				//append
-				//append
-//				ct = new ClientThread(player2); 
-//				clientThreads.add(ct);									
-//				ct.start();
+				
 				new DataOutputStream(player2.getOutputStream()).writeInt(PLAYER2);
 				
 				// Create a new thread for this session of two players
 				HandleSession task = new HandleSession(player1, player2);
-				session = task;
 				new Thread(task).start();
 				
-				Socket socket = serverSocket.accept();  	
-				ct = new ClientThread(socket); 
+				player1 = serverSocket.accept();  
+				System.out.println("hey");
+				ClientThread ct = new ClientThread(player1); 
 				clientThreads.add(ct);									
 				ct.start();
 				
+				player2 = serverSocket.accept();  
+				System.out.println("hey2");
+				ClientThread ct2 = new ClientThread(player2); 
+				clientThreads.add(ct2);									
+				ct2.start();
+				
+				if (didRestart) {
+					System.err.println("HEREEE");
+					task = new HandleSession(player1, player2);
+					new Thread(task).start();
+				}
+				
 			}
-			running = true;
-			while (running) {
-				System.out.println("hey");
-				Socket socket = serverSocket.accept();  	
-				if(!running)
-					break;
-				ct = new ClientThread(socket); 
-				clientThreads.add(ct);									
-				ct.start();
-			}
-			
 			//Terminate 
 			try {
 				serverSocket.close();
@@ -174,14 +168,14 @@ public class Server implements KeoConstants {
 				   
 				    // Check if Player 1 wins
 				    if (isWon('X')) { 
-				    	running = false;
+				    	//running = false;
 				    	System.out.println("im herrre");
 				    	toPlayer1.writeInt(PLAYER1_WON); 
 				    	toPlayer2.writeInt(PLAYER1_WON); 
 				    	sendMove(toPlayer2, row, column); 
 				    	break; // Break the loop
 				    } else if (isFull()) { // Check if all cells are filled
-				    	running = false;
+				    	//running = false;
 				        toPlayer1.writeInt(DRAW); 
 				        toPlayer2.writeInt(DRAW); 
 				        sendMove(toPlayer2, row, column); 
@@ -200,7 +194,7 @@ public class Server implements KeoConstants {
 				   
 				    // Check if Player 2 wins
 				    if (isWon('O')) { 
-				    	running = false;
+				    	//running = false;
 				    	System.out.println("im here");
 				    	toPlayer1.writeInt(PLAYER2_WON); 
 				    	toPlayer2.writeInt(PLAYER2_WON); 
@@ -213,7 +207,6 @@ public class Server implements KeoConstants {
 				        sendMove(toPlayer1, row, column);
 					} 
 				}
-				//running = false;
 				toPlayer1.close();
 				toPlayer2.close();
 				fromPlayer1.close(); 
@@ -221,7 +214,6 @@ public class Server implements KeoConstants {
 				player1.close();
 				player2.close();
 				System.out.println("im hererrr");				
-				running = false;
 				
 			}catch(Exception e) {
 					e.printStackTrace();
@@ -305,8 +297,8 @@ public class Server implements KeoConstants {
 		
 		@Override
 		public void run() {
-			//boolean running = true;
-			while(true) { //loop until LOGOUT
+			boolean running = true;
+			while(running) { //loop until LOGOUT
 				try {
 					clientMessage = (ClientMessage)chatInput.readObject();
 				}catch (IOException e) {
@@ -325,8 +317,13 @@ public class Server implements KeoConstants {
 						broadcast(user + ": " + message);
 						break;
 					case ClientMessage.LOGOUT:
-						showTime(user + " disconnected with a LOGOUT message.");
+						System.out.println(user + " disconnected with a LOGOUT message.");
 						running = false;
+						break;
+					case ClientMessage.RESTART:
+						System.out.println(user + " Restarted");
+						running = false;
+						didRestart = true; 
 						break;
 				}
 				

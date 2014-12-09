@@ -120,17 +120,17 @@ public class Client implements KeoConstants{
 		        if (player == PLAYER1) {
 		        	cGUI.myToken = 'X';
 		        	cGUI.otherToken = 'O';
-		        	cGUI.jlblTitle.setText("Player 1 with token 'X'"); 
+		        	cGUI.jlblTitle.setText("Player 1 : 'X'"); 
 		        	cGUI.jlblStatus.setText("Waiting for player 2 to join");
 		            // Receive startup notification from the server
 		        	fromServer.readInt(); // Whatever read is ignored        
 		            cGUI.jlblStatus.setText("Player 2 has joined. I start first");
 		            cGUI.myTurn = true; 
 		        } else if (player == PLAYER2) {
-		        	System.out.println("Test");
+		        	//System.out.println("Test");
 		        	cGUI.myToken = 'O';
 		        	cGUI.otherToken = 'X';
-		        	cGUI.jlblTitle.setText("Player 2 with token 'O'"); 
+		        	cGUI.jlblTitle.setText("Player 2 : 'O'"); 
 		        	cGUI.jlblStatus.setText("Waiting for player 1 to move");
 		        }
 		        while(cGUI.continueToPlay) {
@@ -144,14 +144,13 @@ public class Client implements KeoConstants{
 		                sendMove();
 		            }
 		        }
+		        cGUI.login.setEnabled(true);
+		    	cGUI.restart.setEnabled(true);
 		        System.out.println("Imhereee");
 		        Thread.sleep(1000);
 		    	fromServer.close();
 		    	toServer.close();
 		    	socket.close();
-		    	
-		    	
-
 			}catch(IOException e) {
 				e.printStackTrace();
 			} catch (InterruptedException e3) {
@@ -159,7 +158,6 @@ public class Client implements KeoConstants{
 			}
 			
 		}
-		
 		
 	}
 	class ServerListenerThread extends Thread {

@@ -5,7 +5,7 @@ import java.text.SimpleDateFormat;
 public interface KeoConstants {
 	public final static int PORT = 1600;
     public final static String HOST = "localhost"; 
-    public final static int LIST = 0, MESSAGE = 1, LOGOUT =  2;
+    public final static int LIST = 5, MESSAGE = 1, LOGOUT =  2, RESTART = 0;
     public final static SimpleDateFormat DATEFORMAT = new SimpleDateFormat("HH:mm:ss");;
     
 	public static int PLAYER1 = 1; // Indicate player 1
