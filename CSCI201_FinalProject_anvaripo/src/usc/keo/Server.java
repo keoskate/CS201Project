@@ -31,7 +31,8 @@ public class Server implements KeoConstants {
 				
 				serverGUI.appendText(new Date() + ": Wait for players to join session " + sessionNo + '\n');
 				System.out.println("Server waiting for Clients on port " + PORT + ".");
-				
+				if(!running)
+					break;
 				Socket player1 = serverSocket.accept();
 				//append
 				//append
@@ -56,25 +57,34 @@ public class Server implements KeoConstants {
 				session = task;
 				new Thread(task).start();
 				
-//				Socket socket = serverSocket.accept();  	
-//				if(!running)
-//					break;
-//				ct = new ClientThread(socket); 
-//				clientThreads.add(ct);									
-//				ct.start();
+				Socket socket = serverSocket.accept();  	
+				ct = new ClientThread(socket); 
+				clientThreads.add(ct);									
+				ct.start();
 				
 			}
+			running = true;
+			while (running) {
+				System.out.println("hey");
+				Socket socket = serverSocket.accept();  	
+				if(!running)
+					break;
+				ct = new ClientThread(socket); 
+				clientThreads.add(ct);									
+				ct.start();
+			}
+			
 			//Terminate 
 			try {
 				serverSocket.close();
-//				for(int i = 0; i < clientThreads.size(); ++i) {
-//					ClientThread tc = clientThreads.get(i);
-//					try {
-//						tc.chatInput.close();
-//						tc.chatOutput.close();
-//						tc.socket.close();
-//					} catch(IOException ioE) {  }
-//				}
+				for(int i = 0; i < clientThreads.size(); ++i) {
+					ClientThread tc = clientThreads.get(i);
+					try {
+						tc.chatInput.close();
+						tc.chatOutput.close();
+						tc.socket.close();
+					} catch(IOException ioE) {  }
+				}
 			}catch(Exception e) {
 				showTime("Exception closing the server and clients: " + e);
 			}
@@ -148,12 +158,11 @@ public class Server implements KeoConstants {
 			
 		}
 		public void run() {
-			boolean running = true;
 			try {
-				toPlayer1 = new DataOutputStream( player1.getOutputStream());
-				toPlayer2 = new DataOutputStream( player2.getOutputStream());
-				fromPlayer1 = new DataInputStream( player1.getInputStream());
-				fromPlayer2 = new DataInputStream( player2.getInputStream());
+				DataOutputStream toPlayer1 = new DataOutputStream( player1.getOutputStream());
+				DataOutputStream toPlayer2 = new DataOutputStream( player2.getOutputStream());
+				DataInputStream fromPlayer1 = new DataInputStream( player1.getInputStream());
+				DataInputStream fromPlayer2 = new DataInputStream( player2.getInputStream());
 				
 				toPlayer1.writeInt(1);
 				
@@ -165,11 +174,14 @@ public class Server implements KeoConstants {
 				   
 				    // Check if Player 1 wins
 				    if (isWon('X')) { 
+				    	running = false;
+				    	System.out.println("im herrre");
 				    	toPlayer1.writeInt(PLAYER1_WON); 
 				    	toPlayer2.writeInt(PLAYER1_WON); 
 				    	sendMove(toPlayer2, row, column); 
 				    	break; // Break the loop
 				    } else if (isFull()) { // Check if all cells are filled
+				    	running = false;
 				        toPlayer1.writeInt(DRAW); 
 				        toPlayer2.writeInt(DRAW); 
 				        sendMove(toPlayer2, row, column); 
@@ -188,6 +200,8 @@ public class Server implements KeoConstants {
 				   
 				    // Check if Player 2 wins
 				    if (isWon('O')) { 
+				    	running = false;
+				    	System.out.println("im here");
 				    	toPlayer1.writeInt(PLAYER2_WON); 
 				    	toPlayer2.writeInt(PLAYER2_WON); 
 				    	sendMove(toPlayer1, row, column); 
@@ -198,7 +212,17 @@ public class Server implements KeoConstants {
 				        // Send player 2's selected row and column to player 1	
 				        sendMove(toPlayer1, row, column);
 					} 
-				} 
+				}
+				//running = false;
+				toPlayer1.close();
+				toPlayer2.close();
+				fromPlayer1.close(); 
+				fromPlayer2.close(); 
+				player1.close();
+				player2.close();
+				System.out.println("im hererrr");				
+				running = false;
+				
 			}catch(Exception e) {
 					e.printStackTrace();
 			}
@@ -215,9 +239,8 @@ public class Server implements KeoConstants {
 			for (int i = 0; i < 3; i++)
 				for (int j = 0; j < 3; j++) 
 					if (cell[i][j] == ' ')
-						return false; // At least one cell is not filled
+						return false; 
 			
-			// All cells are filled
 			return true; 
 		}
 
@@ -261,8 +284,6 @@ public class Server implements KeoConstants {
 		ClientMessage clientMessage;
 		String date;
 		
-		private char[][] cell = new char[3][3];
-		
 		ClientThread(Socket socket) {
 			id = userId++;
 			this.socket = socket;
@@ -284,14 +305,16 @@ public class Server implements KeoConstants {
 		
 		@Override
 		public void run() {
-			boolean running = true;
-			while(running) { //loop until LOGOUT
+			//boolean running = true;
+			while(true) { //loop until LOGOUT
 				try {
 					clientMessage = (ClientMessage)chatInput.readObject();
 				}catch (IOException e) {
+					e.printStackTrace();
 					showTime(user + " Exception reading Streams: " + e);
 					break;				
 				}catch(ClassNotFoundException e2) {
+					e2.printStackTrace();
 					break;
 				}
 	

@@ -16,7 +16,7 @@ public class Client implements KeoConstants{
 	private DataOutputStream toServer;
 
 	Client(String username, ClientGUI cGUI) {
-		this.user = username;
+		this.setUser(username);
 		this.cGUI = cGUI;
 	}
 	Client(ClientGUI cGUI) {
@@ -69,7 +69,7 @@ public class Client implements KeoConstants{
 		
 		try {
 			//toServer.writeObject(user);
-			chatOutput.writeObject(user);
+			chatOutput.writeObject(getUser());
 		} catch (IOException eIO) {
 			display(" during login : " + eIO);
 			disconnect();
@@ -144,6 +144,14 @@ public class Client implements KeoConstants{
 		                sendMove();
 		            }
 		        }
+		        System.out.println("Imhereee");
+		        Thread.sleep(1000);
+		    	fromServer.close();
+		    	toServer.close();
+		    	socket.close();
+		    	
+		    	
+
 			}catch(IOException e) {
 				e.printStackTrace();
 			} catch (InterruptedException e3) {
@@ -226,6 +234,12 @@ public class Client implements KeoConstants{
 		int row = fromServer.readInt();
 		int column = fromServer.readInt(); 
 		cGUI.cell[row][column].setToken(cGUI.otherToken);
+	}
+	public String getUser() {
+		return user;
+	}
+	public void setUser(String user) {
+		this.user = user;
 	}
 	
 	

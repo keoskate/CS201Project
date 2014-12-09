@@ -11,7 +11,7 @@ public class ClientGUI extends JFrame implements ActionListener, KeoConstants {
 
 	private JLabel label;
 	private JTextField textField;
-	private JButton login, logout;
+	public JButton login, logout;
 	private JTextArea clientTextArea;
 	private boolean connected;
 	private Client client;
@@ -49,11 +49,11 @@ public class ClientGUI extends JFrame implements ActionListener, KeoConstants {
 		jlblTitle.setBorder(new LineBorder(Color.black, 1));
 		jlblStatus.setBorder(new LineBorder(Color.black, 1));
 		
-		label = new JLabel("Enter your username below", SwingConstants.LEFT);
-		textFieldPanel.add(label);
-		textField = new JTextField("Anonymous");
-		textField.setBackground(Color.WHITE);
-		textFieldPanel.add(textField);	
+		setLabel(new JLabel("Enter your username below", SwingConstants.LEFT));
+		textFieldPanel.add(getLabel());
+		setTextField(new JTextField("Anonymous"));
+		getTextField().setBackground(Color.WHITE);
+		textFieldPanel.add(getTextField());	
 
 		clientTextArea = new JTextArea("Welcome to the Chat room\n", 80, 80);
 		JPanel centerPanel = new JPanel(new GridLayout(1,1));
@@ -71,8 +71,8 @@ public class ClientGUI extends JFrame implements ActionListener, KeoConstants {
 		southPanel.add(logout);
 		
 		jlblTitle.setBounds(10, 5, 580, 20);
-		gamePanel.setBounds(140, 35, 250, 250);
-		jlblStatus.setBounds(10, 290, 580, 20);
+		gamePanel.setBounds(155, 30, 250, 250);
+		jlblStatus.setBounds(10, 280, 580, 20);
 		
 		textFieldPanel.setBounds(0, 300, 600, 100);
 		centerPanel.setBounds(0, 400, 600, 230);
@@ -87,10 +87,10 @@ public class ClientGUI extends JFrame implements ActionListener, KeoConstants {
 		
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setVisible(true);
-		textField.requestFocus();
+		getTextField().requestFocus();
 		
-		client = new Client(this);
-		client.initClient2();
+		setClient(new Client(this));
+		getClient().initClient2();
 	}
 
 
@@ -103,50 +103,48 @@ public class ClientGUI extends JFrame implements ActionListener, KeoConstants {
 		login.setEnabled(true);
 		logout.setEnabled(false);
 
-		label.setText("Enter your username below");
-		textField.setText("Anonymous");
+		getLabel().setText("Enter your username below");
+		getTextField().setText("Anonymous");
 
-//		portField.setText("" + PORT);
-//		serverField.setText(HOST);
-
-		textField.removeActionListener(this);
-		connected = false;
+		getTextField().removeActionListener(this);
+		setConnected(false);
 	}
 		
 	public void actionPerformed(ActionEvent e) {
 		Object o = e.getSource();
 
 		if(o == logout) {
-			client.sendMessage(new ClientMessage(ClientMessage.LOGOUT, ""));
+			getClient().sendMessage(new ClientMessage(ClientMessage.LOGOUT, ""));
 			return;
 		}
 		//client.sendMessage(new ClientMessage(ClientMessage.LIST, ""));
-		if(connected) {
-			client.sendMessage(new ClientMessage(ClientMessage.MESSAGE, textField.getText()));				
-			textField.setText("");
+		if(isConnected()) {
+			getClient().sendMessage(new ClientMessage(ClientMessage.MESSAGE, getTextField().getText()));				
+			getTextField().setText("");
 			return;
 		}
 	
 		if(o == login) {
-			if (!second) {
-				String username = textField.getText().trim();
+//			if (!second) {
+				String username = getTextField().getText().trim();
 
 				if(username.length() == 0)
 					return;
 
-				client = new Client(username, this);
+				//client = new Client(username, this);
+				getClient().setUser(username);
 		
-				if(!client.initClient()) 
+				if(!getClient().initClient()) 
 					return;
 				
-				textField.setText("");
-				label.setText("Enter your message below:");
-				connected = true;
+				getTextField().setText("");
+				getLabel().setText("Enter your message below:");
+				setConnected(true);
 				
 				login.setEnabled(false);
 				logout.setEnabled(true);
-				textField.addActionListener(this);
-			}
+				getTextField().addActionListener(this);
+			//}
 			
 		}
 
@@ -183,9 +181,10 @@ public class ClientGUI extends JFrame implements ActionListener, KeoConstants {
 		private class ClickListener extends MouseAdapter {
 			 @Override
 			 public void mouseClicked(MouseEvent e) {
-				 // If cell is not occupied and the player has the turn
+				 
 				 if (token == ' ' && myTurn) {
-					 setToken(myToken); // Set the player's token in the cell 256 myTurn = false;
+					 setToken(myToken); 
+					 myTurn = false;
 					 rowSelected = row;
 					 columnSelected = column;
 					 jlblStatus.setText("Waiting for the other player to move");
@@ -197,6 +196,46 @@ public class ClientGUI extends JFrame implements ActionListener, KeoConstants {
 	
 	public static void main(String[] args) {
 		new ClientGUI();
+	}
+
+
+	public JTextField getTextField() {
+		return textField;
+	}
+
+
+	public void setTextField(JTextField textField) {
+		this.textField = textField;
+	}
+
+
+	public Client getClient() {
+		return client;
+	}
+
+
+	public void setClient(Client client) {
+		this.client = client;
+	}
+
+
+	public boolean isConnected() {
+		return connected;
+	}
+
+
+	public void setConnected(boolean connected) {
+		this.connected = connected;
+	}
+
+
+	public JLabel getLabel() {
+		return label;
+	}
+
+
+	public void setLabel(JLabel label) {
+		this.label = label;
 	}
 
 }
