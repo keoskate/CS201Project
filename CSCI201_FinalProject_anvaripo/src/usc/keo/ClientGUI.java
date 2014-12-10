@@ -31,11 +31,15 @@ public class ClientGUI extends JFrame implements ActionListener, KeoConstants {
 	
 	ClientGUI() {
 		super("Game Client");
-		setSize(600, 700);
+		setSize(300, 700);
 		setLayout(null);
 		
+		JMenuBar menuBar = new JMenuBar();
+        JMenuItem openMenuItem = new JMenuItem("New Game");
+        menuBar.add(openMenuItem);
+        
+        
 		JPanel textFieldPanel = new JPanel(new GridLayout(2,1));
-		
 		JPanel gamePanel = new JPanel();
 		gamePanel.setLayout(new GridLayout(3, 3, 0, 0));
 
@@ -49,21 +53,21 @@ public class ClientGUI extends JFrame implements ActionListener, KeoConstants {
 		jlblTitle.setBorder(new LineBorder(Color.black, 1));
 		jlblStatus.setBorder(new LineBorder(Color.black, 1));
 		
-		setLabel(new JLabel("Enter your username below", SwingConstants.LEFT));
+		setLabel(new JLabel("Your Name: ", SwingConstants.LEFT));
 		textFieldPanel.add(getLabel());
 		setTextField(new JTextField("Anonymous"));
 		getTextField().setBackground(Color.WHITE);
 		textFieldPanel.add(getTextField());	
 
-		clientTextArea = new JTextArea("Welcome to the Chat room\n", 80, 80);
+		clientTextArea = new JTextArea("Welcome to the Chat room\n", 10, 40);
 		JPanel centerPanel = new JPanel(new GridLayout(1,1));
 		centerPanel.add(new JScrollPane(clientTextArea));
 		clientTextArea.setEditable(false);
 		
-		login = new JButton("Login");
+		login = new JButton("Chat");
 		login.addActionListener(this);
 		//login.setEnabled(false);
-		logout = new JButton("Logout");
+		logout = new JButton("Disconnect");
 		logout.addActionListener(this);
 		logout.setEnabled(false);	
 		restart = new JButton("Restart");
@@ -75,13 +79,13 @@ public class ClientGUI extends JFrame implements ActionListener, KeoConstants {
 		southPanel.add(logout);
 		southPanel.add(restart);
 		
-		jlblTitle.setBounds(10, 5, 580, 20);
-		gamePanel.setBounds(155, 30, 250, 250);
-		jlblStatus.setBounds(10, 280, 580, 20);
+		jlblTitle.setBounds(0, 0, 300, 20);
+		gamePanel.setBounds(0, 21, 300, 300);
+		jlblStatus.setBounds(0, 321, 300, 20);
 		
-		textFieldPanel.setBounds(0, 300, 600, 100);
-		centerPanel.setBounds(0, 400, 600, 230);
-		southPanel.setBounds(0, 630, 600, 75);
+		textFieldPanel.setBounds(0, 350, 300, 50);
+		centerPanel.setBounds(0, 401, 300, 220);
+		southPanel.setBounds(0, 620, 300, 75);
 		
 		add(jlblTitle, jlblTitle.getPreferredSize());
 		add(gamePanel, this.getSize());
@@ -90,6 +94,7 @@ public class ClientGUI extends JFrame implements ActionListener, KeoConstants {
 		add(centerPanel, this.getSize());
 		add(southPanel, this.getSize());
 		
+		setJMenuBar(menuBar); 
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setVisible(true);
 		getTextField().requestFocus();
